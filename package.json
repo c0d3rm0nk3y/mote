@@ -1,0 +1,31 @@
+{
+  "name": "mote",
+  "version": "1.0.0",
+  "description": "news and wiki engine",
+  "main": "mote.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c0d3rm0nk3y/mote.git"
+  },
+  "keywords": [
+    "news",
+    "wiki",
+    "research"
+  ],
+  "author": "datawhore",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/c0d3rm0nk3y/mote/issues"
+  },
+  "homepage": "https://github.com/c0d3rm0nk3y/mote#readme",
+  "dependencies": {
+    "feed-read": "0.0.1",
+    "html-entities": "^1.1.2",
+    "q": "^1.4.1",
+    "readline-sync": "^1.2.19",
+    "request": "^2.58.0"
+  }
+}
