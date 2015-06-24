@@ -20,12 +20,17 @@ exports.askInt = function(question) {
 };
 
 exports.gup = function( name, link ) {
-  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-  var regexS = "[\\?&]"+name+"=([^&#]*)";
-  var regex = new RegExp( regexS );
+  name        = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS  = "[\\?&]"+name+"=([^&#]*)";
+  var regex   = new RegExp( regexS );
   var results = regex.exec( link );
-  if( results === null )
-    return null;
-  else
-    return results[1];
+  if(results === null) return null;
+  else                 return results[1];
+};
+
+exports.strip = function(text) {
+  try {
+    text = h.html_strip(text,o);
+    return text;
+  } catch(ex) { return 'parse failure: ' + ex + ' for '  + text; }
 };

@@ -24,8 +24,11 @@
   "dependencies": {
     "feed-read": "0.0.1",
     "html-entities": "^1.1.2",
+    "newline-remove": "^1.0.2",
+    "node-readability": "^1.0.1",
     "q": "^1.4.1",
     "readline-sync": "^1.2.19",
-    "request": "^2.58.0"
+    "request": "^2.58.0",
+    "sanitize-html": "^1.7.0"
   }
 }
