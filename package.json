@@ -24,6 +24,7 @@
   "dependencies": {
     "feed-read": "0.0.1",
     "html-entities": "^1.1.2",
+    "htmlstrip-native": "^0.1.1",
     "newline-remove": "^1.0.2",
     "node-readability": "^1.0.1",
     "q": "^1.4.1",

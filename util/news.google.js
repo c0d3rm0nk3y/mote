@@ -23,7 +23,6 @@ exports.search = function(keywords) {
             last.then(function() {
               console.log('last article read.. updating core...');
               result.articles = read;
-              console.log(JSON.stringify(result, null, 2));
               d.resolve(result);
             });
             
@@ -48,50 +47,22 @@ var readArticles = function(articleObjString) {
         art.text = ass.strip(art.content);
         if(art.content.indexOf('<p>') > -1) {
           art.containsParagraph = true; 
-          
+          ass.getParagraphs(article)
+            .then(function(result) {
+              art.paragraphs = result.paragraphs;
+              read.push(art);
+              d.resolve();
+            }).catch(function(ex) {d.reject(ex);});
+        } else {
+          read.push(art);
+          d.resolve();
         }
-        read.push(art);
-        d.resolve();
       }
     });
   } catch(ex) { d.reject(ex); }
   return d.promise;
 };
 
-var sh = require('sanitize-html');
-var nl = require('newline-remove');
-var Entities = require('html-entities').AllHtmlEntities;
-entities = new Entities();
-
-var getParagraphs = function(content) {
-  var d= q.defer();
-  try { 
-    var rez = {};
-    rez.title = text.title;
-    rez.content = text.content;
-    rez.para = sh(text.content, {allowedTags: ['p']});
-    rez.para = nl(rez.para);
-    rez.para = entities.decode(rez.para);
-    
-    var open = "<p>";
-    var clse = "</p>";
-    var iB = 0; var iE = 0; var iI = 0;
-    
-    var pArray = [];
-    
-    while((iI = rez.para.indexOf(open,iI)) > -1) {
-      iB = iI;
-      if((iE = rez.para.indexOf(clse, iB)) > -1) {
-        pArray.push(rez.para.substring((iB + open.length), iE));
-      }
-      iI = iE;
-    }
-    
-    
-    rez.paragraphs = pArray
-  } catch(ex) { d.reject(ex); }
-  return d.promise;
-};
 
 var getFeed = function(keywords, count) {
   var d = q.defer();

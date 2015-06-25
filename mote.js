@@ -3,11 +3,20 @@ var feed = require('./util/google.feed');
 var news = require('./util/news.google');
 var wiki = require('./util/wiki');
 var  ass = require('./util/ass');
+var   fs = require('fs');
 
 var init = function() {
-  getNews().then (function(data) { console.log(JSON.stringify(data, null, 2)); })
-           .catch(function(ex)   { console.log(ex);                            })
-           .done ();
+  getNews().then (function(data) { return data;     })
+           .catch(function(ex)   { console.log(ex); })
+           .done (function(data) {
+             console.log("%s queried successfully", data.keywords);
+             var filename = 'queries/' + data.keywords + '.json';
+             var contents = JSON.stringify(data,null,2);
+             fs.writeFile(filename, contents, function(err) {
+               if(err) console.log('write failed: %s', err);
+               else    console.log('write successful!');
+             });
+           });
 };
 
 var getNews = function() {
