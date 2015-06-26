@@ -16,7 +16,7 @@ exports.search = function(keywords) {
             console.log('returned from getFeed()...');
             var last = result.toPromise.reduce(function(promise, article) {
               return promise.then(function() {
-                return readArticles(article);
+                return readArticle(article);
               });
             }, q.resolve());
             
@@ -33,7 +33,7 @@ exports.search = function(keywords) {
   return d.promise;
 };
 
-var readArticles = function(articleObjString) {
+var readArticle = function(articleObjString) {
   var d = q.defer();
   try {
     var art = JSON.parse(articleObjString);
@@ -54,6 +54,7 @@ var readArticles = function(articleObjString) {
               d.resolve();
             }).catch(function(ex) {d.reject(ex);});
         } else {
+          art.containsParagraph = false;
           read.push(art);
           d.resolve();
         }
@@ -84,7 +85,8 @@ var getFeed = function(keywords, count) {
           delete article.content;
           article.link = ass.gup('url', article.link);  
           result.articles.push(article);
-          result.toPromise.push(JSON.stringify(article));
+          if(article.link.indexOf('nytimes.com') === -1)
+            result.toPromise.push(JSON.stringify(article));
         });
         console.log('finsihed trimming individual articles...');
         d.resolve(result); 

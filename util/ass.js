@@ -1,11 +1,14 @@
-var        q = require('../node_modules/q');
-var       rs = require('../node_modules/readline-sync');
-var        h = require('../node_modules/htmlstrip-native');
-var       sh = require('../node_modules/sanitize-html');
-var       nl = require('../node_modules/newline-remove');
-var       fr = require('../node_modules/feed-read');
-var Entities = require('../node_modules/html-entities').AllHtmlEntities;
-var entities = new Entities();
+var   q = require('../node_modules/q');
+var  rs = require('../node_modules/readline-sync');
+var   h = require('../node_modules/htmlstrip-native');
+var  sh = require('../node_modules/sanitize-html');
+var  nl = require('../node_modules/newline-remove');
+var  fr = require('../node_modules/feed-read');
+var   e = require('../node_modules/html-entities').AllHtmlEntities;
+var  wn = require('../node_modules/wordnet');
+var  tm = require('../node_modules/text-miner');
+
+var entities = new e();
 
 
 exports.askQuestion = function(question) {
@@ -22,6 +25,29 @@ exports.askInt = function(question) {
   try  {
      var answer = rs.questionInt(question);
      d.resolve(answer);
+  } catch(ex) { d.reject(ex); }
+  return d.promise;
+};
+
+exports.mineArticle = function(readabilityObject) {
+  var d = q.defer();
+  try {
+    
+  } catch(ex) { d.reject(ex); }
+  return d.promise;
+};
+
+
+exports.defineWord = function(word) {
+  var d = q.defer();
+  try {
+    wn.lookup(word, function(err, definitions) {
+      
+      definitions.forEach(function(definition) {
+        console.log(definition);
+      });
+    
+    });
   } catch(ex) { d.reject(ex); }
   return d.promise;
 };

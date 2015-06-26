@@ -11,6 +11,7 @@ var init = function() {
            .done (function(data) {
              console.log("%s queried successfully", data.keywords);
              var filename = 'queries/' + data.keywords + '.json';
+             delete data.toPromise;
              var contents = JSON.stringify(data,null,2);
              fs.writeFile(filename, contents, function(err) {
                if(err) console.log('write failed: %s', err);
