@@ -26,7 +26,8 @@ var getNews = function() {
     ass.askQuestion("What type of news are you looking for? ")
     .then(function(keywords) {
       news.search(keywords)
-        .then (function(results) { d.resolve(results); })
+        .then (function(results) { return ass.mineArticle(results); })
+        .then (function(results) { d.resolve(results);})
         .catch(function(ex)      { d.reject(ex); })
         .done();
       

@@ -13,7 +13,7 @@ exports.search = function(keywords) {
       .then(function(count) {
         getFeed(keywords, count)
           .then(function(result) {
-            console.log('returned from getFeed()...');
+            //console.log('returned from getFeed()...');
             var last = result.toPromise.reduce(function(promise, article) {
               return promise.then(function() {
                 return readArticle(article);
@@ -39,10 +39,10 @@ var readArticle = function(articleObjString) {
     var art = JSON.parse(articleObjString);
     console.log("begin reading article %s", art.title);
     nr(art.link,function(err, article, meta) {
-      if(err) { console.log(err); } 
-      else if(!article.content) { console.log('readability returned false...'); } 
+      if(err) { console.log(err); d.resolve();} 
+      else if(!article.content) { console.log('readability returned false...'); d.resolve(); } 
       else {
-        console.log('read successful...');
+        //console.log('read successful...');
         art.content = article.content;
         art.text = ass.strip(art.content);
         if(art.content.indexOf('<p>') > -1) {
