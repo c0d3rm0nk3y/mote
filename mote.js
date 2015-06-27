@@ -1,12 +1,13 @@
 var    q = require('q');
 var feed = require('./util/google.feed');
 var news = require('./util/news.google');
+var arch = require('./util/archive.org');
 var wiki = require('./util/wiki');
 var  ass = require('./util/ass');
 var   fs = require('fs');
 
 var init = function() {
-  getNews().then (function(data) { return data;     })
+  getNews().then (function(data) { return arch.search(data);     })
            .catch(function(ex)   { console.log(ex); })
            .done (function(data) {
              console.log("%s queried successfully", data.keywords);
