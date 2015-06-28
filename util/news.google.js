@@ -5,6 +5,10 @@ var   nr = require('../node_modules/node-readability');
 
 var read = [];
 
+/*
+  find more stuff to 
+*/
+
 exports.search = function(keywords) {
   var d = q.defer();
   try  {
@@ -72,14 +76,13 @@ var getFeed = function(keywords, count) {
     console.log('getting feed.. %s', url);
     fr(url, function(err, articles) {
       if(err) { d.reject(err); } else {
-        console.log('feeds obtained..');
+        console.log('feeds obtained, %s articles..', articles.length);
         // loop through artciles trimming google from their url
         var result = {};
         result.keywords = keywords.replace(/%20/g,' ');
         result.url = url;
         result.articles = [];
         result.toPromise = [];
-        console.log('begin trimming individual articles..');
         articles.forEach(function(article) { 
           delete article.feed;
           delete article.content;
@@ -88,7 +91,6 @@ var getFeed = function(keywords, count) {
           if(article.link.indexOf('nytimes.com') === -1)
             result.toPromise.push(JSON.stringify(article));
         });
-        console.log('finsihed trimming individual articles...');
         d.resolve(result); 
       }
     });    

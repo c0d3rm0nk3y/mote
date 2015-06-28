@@ -18,18 +18,15 @@ exports.search = function(data) {
     arch.search({q: data.keywords}, function(err, res) {
       if(err) { console.log('archive.org error: %s', err); d.resolve(data); }
       else    { 
-        console.log('saving archive response to data..');
         data.archive = res; 
         // data.archive.response.docs.identifier 
         var promises = [];
-        console.log('building promise list..');
         
         res.response.docs.forEach(function(doc) {
           var a = 'http://archive.org/details/' + doc.identifier +  '&output=json';
-          console.log('built: %s', a);
           promises.push(a);
         });
-        console.log(JSON.stringify(promises,null,2));
+        console.log('begin processing archive.org, %s individual responses', promises.length);
         var l = promises.reduce(function(p,j) { 
           return p.then(function() { 
             return requestJson(j); 
@@ -37,7 +34,7 @@ exports.search = function(data) {
         }, q.resolve());
         
         l.then(function() {
-          console.log('last identifier processed... %s idents', idents.length);
+          console.log('last response processed... %s idents', idents.length);
           data.idents = idents;
           data.content = content;
           data.images = images;

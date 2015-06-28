@@ -4,6 +4,8 @@ var   h = require('../node_modules/htmlstrip-native');
 var  sh = require('../node_modules/sanitize-html');
 var  nl = require('../node_modules/newline-remove');
 var  fr = require('../node_modules/feed-read');
+var  fs = require('fs');
+var net = require('http');
 var   e = require('../node_modules/html-entities').AllHtmlEntities;
 var  wn = require('../node_modules/wordnet');
 var  tm = require('../node_modules/text-miner');
@@ -58,7 +60,25 @@ exports.mineArticle = function(data) {
   var d = q.defer();
   try {
     var docArr = [];
-    data.articles.forEach(function(article) { docArr.push(article.text); });
+    data.articles.forEach(function(article) { 
+      docArr.push(article.text); 
+      var matches = (article.text).match(/\b([A-Z]{2,})\b/g);
+      if(matches !== null) capitals.push(matches);
+    });
+    
+    
+    var lNamesPromises = docArr.reduce(function(p, doc) {
+      return p.then(function() {
+        return findNames(doc);
+      });
+    }, q.resolve());
+    
+    lNamesPromises.then(function() {
+      data.capitals = capitals;
+    
+      //data.names = names;
+    });
+    
     var corpus = new tm.Corpus(docArr);
     //var punc = ['\''  ,  '\"'  ,  '-'  ,   ':'  ,  '<'  ,  '>'  , '('  , ')'];
     corpus = corpus.clean().trim().removeInvalidCharacters().removeDigits().removeInterpunctuation().removeWords(tm.STOPWORDS.EN);
@@ -100,6 +120,58 @@ exports.getFeed = function(url) {
   } catch(ex) { d.reject(ex); }
   return d.promise;
 };
+
+var names = [];
+var capitals = [];
+
+var findNames = function(text) {
+  var d = q.defer();
+  try {
+    var words = text.split(' ');
+    var lastWord = false;
+    var capsInARow = [];
+    for(var i=0; i<words.length; i++) {
+      if(words[i].trim() !== '') {
+        if(/[A-Z]/.test(words[i][0]) && words[i].length > 1) {
+          if(words[i].indexOf(',') === -1)
+          capsInARow.push(words[i]);
+          lastWord = true;
+        } else {
+          if(capsInARow.length > 1) capitals.push(capsInARow);
+          capsInARow = [];
+          lastWord = false;
+        }
+      } 
+      // if(words[i].trim() !== '' || words[i + 1].trim() !== '') {
+      //   if(/[A-Z]/.test(words[i][0]) && /[A-Z]/.test(words[i+1][0]) ) {
+      //     names.push(words[i] + ' ' + words[i+1]);
+      //   }
+      // } 
+    }
+    d.resolve();
+  } catch(ex) { console.log('findNames() exception: %s',ex.message); d.reject(ex);  }
+  return d.promise;
+};
+
+exports.downloadFile = function(url, filePath, cb) {
+  var d = q.defer();
+  try {
+    var file = fs.createWriteStream(filePath);
+    var  req = net.get(url, function(res) {
+      res.pipe(file);
+      file.on('finish', function() {file.close(cb);});
+    }).on('err0r', function(err) {
+      fs.unlink(filePath);
+      if(cb) cb(err.message);
+      d.reject();
+    });
+    
+  } catch(ex) { 
+    console.log('donwloadFile() ex: %s', ex); 
+    d.reject(ex);
+  }
+  return d.promise;
+}
 
 exports.buildGoogleNewsUrl = function() {
   var d = q.defer();
@@ -176,7 +248,7 @@ var defineWord = function(wordString) {
   try {
     wn.lookup(word.word, function(err, definitions) {
       
-      if(err) { console.log('finsihed processing %s, %s errored..', ft.length, word.word);  d.resolve(); }
+      if(err) { d.resolve(); }
       else {
         var glossory = [];
         definitions.forEach(function(definition) { glossory.push(definition.glossary);});
