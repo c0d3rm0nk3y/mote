@@ -16,36 +16,48 @@ exports.search = function(data) {
   var d = q.defer();
   try {
     arch.search({q: data.keywords}, function(err, res) {
+      /*
+        arch.search() response [docs] 
+          - "identifier" : "..." this is with a url to pull down available media
+            - "server" :  "..."  the domain of the download url
+            - "dir" : "..."  this is the directory to append to the "sever" 
+            - "presenter", "contributor"  - mine these to see if who's actually 
+                                            in the content
+            - "files" : {
+              "/blah.gif" : {  <-- uses this to finish the content url
+                source
+                format
+                original
+                mtime 
+                size
+                md5
+                crc32
+                sha1
+              }
+            }
+            
+  https://ia801004.us.archive.org/27/items/RagRadio2013-11-22-SamDaley-harris/RagRadio2013-11-22-SamDaley-harris.mp3
+      */
+      
       if(err) { console.log('archive.org error: %s', err); d.resolve(data); }
       else    { 
         data.archive = res; 
         // data.archive.response.docs.identifier 
-        var promises = [];
+        var promises = buildIdentificationUrls(res.response.docs);
+        downloadAllIdentificationUrls(promises)
+          .then(function() {
+            data.idents   = idents;
+            data.content  = content;
+            data.images   = images;
+            data.audio    = audio;
+            data.videos   = videos;
+            data.docs     = docs;
+            data.archives = archive;
+            data.xml      = xml;
+            data.torrent  = torrent;
+            d.resolve(data); 
+          }, function(err) {d.reject(err);});
         
-        res.response.docs.forEach(function(doc) {
-          var a = 'http://archive.org/details/' + doc.identifier +  '&output=json';
-          promises.push(a);
-        });
-        console.log('begin processing archive.org, %s individual responses', promises.length);
-        var l = promises.reduce(function(p,j) { 
-          return p.then(function() { 
-            return requestJson(j); 
-          }); 
-        }, q.resolve());
-        
-        l.then(function() {
-          console.log('last response processed... %s idents', idents.length);
-          data.idents = idents;
-          data.content = content;
-          data.images = images;
-          data.audio = audio;
-          data.videos = videos;
-          data.docs = docs;
-          data.archives = archive;
-          data.xml = xml;
-          data.torrent = torrent;
-          d.resolve(data);  
-        });
         // http://archive.org/details/ + identifier +  &output=json
         // console.log(JSON.stringify(res,null,2)); 
         // https://ia700806.us.archive.org/15/items/KochBrothersGopPrimaryDoom/kochprimary.ogg
@@ -53,6 +65,40 @@ exports.search = function(data) {
     });  
   } catch(ex) { console.log("archive.org ex:%s",ex); d.resolve(data); }
   return d.promise;
+};
+
+var downloadAllIdentificationUrls = function(urls) {
+  var d = q.defer();
+  try {
+    console.log('beginning dowloading of resources')
+    
+    var l = urls.reduce(function(p,j) { 
+      return p.then(function() { 
+        return requestJson(j); 
+      }); 
+    }, q.resolve());
+    
+    l.then(function() {
+      console.log('finished downloading %s resources...', idents.length);
+      d.resolve();
+    });
+  } catch(ex) { 
+    console.log('downloadAllIdentificationUrls() exception: %s', ex);
+    d.reject(ex);
+  }
+  return d.promise;
+};
+
+var buildIdentificationUrls = function(docs) {
+  
+  try {
+    var results = [];
+    docs.forEach(function(doc) {
+      var a = 'http://archive.org/details/' + doc.identifier +  '&output=json';
+      results.push(a);
+    });
+    return results;
+  } catch(ex) { console.log('buildIdentificationUrls() exception: %s', ex); }
 };
 
 var requestJson = function(url) {
